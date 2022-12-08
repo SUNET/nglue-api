@@ -58,7 +58,6 @@ def createIncident(config_token, config_url, problemid, hostname, description, l
     log(debug, "---- END --- Argus will take it from here")
     if validate:
         log(debug, "(VALIDATE FLAG DETECTED - create notification not  sent to argus)")
-        sys.exit(0)
     else:
         output = c.post_incident(i)
         log(debug, output)
@@ -85,14 +84,12 @@ def closeIncident(
                     debug,
                     "(VALIDATE FLAG DETECTED - clear notification not sent to argus)",
                 )
-                sys.exit(0)
             else:
                 c.resolve_incident(
                     incident=incident.pk,
                     description=hostname + "-" + close_description[0:115],
                     timestamp=datetime.now(),
                 )
-            sys.exit(0)
     log(debug, "---- END --- No matching incidents found")
 
 
@@ -120,8 +117,6 @@ def main():
                     "ERROR: Argus API failed on {}".format(client.api.api_root_url),
                     file=sys.stderr,
                 )
-                sys.exit(2)
-            sys.exit(0)
 
         # Debug purpose
         log(debug, "---- START ---")
@@ -131,7 +126,6 @@ def main():
         # TODO find a way to syncronize argus and nagios
         if data["sync"]:
             log(debug, "---- END --- SYNC Funtion not yet in place")
-            sys.exit(0)
 
         # Description of macros in nagios
         # https://assets.nagios.com/downloads/nagioscore/docs/nagioscore/4/en/macrolist.html
@@ -139,7 +133,6 @@ def main():
         # If Notification are disabled for the Service - EXIT Follows $SERVICENOTIFICATIONENABLED$
         if data["notification"] == "NO":
             log(debug, "---- END --- No notification on this check")
-            sys.exit(0)
         # Create incident with argus
         # Conditions for new Incident - Service StateID different from Last ServiceStateID,
         # Last ServiceStateID is 0 and ProblemID is 0
@@ -150,7 +143,6 @@ def main():
             if data["servicestateid"] == data["lastservicestateid"]:
                 # No state change - exit
                 log(debug, "---- END --- Check is still green")
-                sys.exit(0)
             else:
                 closeIncident(
                     config_token=config_token,
@@ -168,7 +160,6 @@ def main():
                     debug,
                     "---- END --- Argus is already aware of this issue (Or issue not critical enough)",
                 )
-                sys.exit(0)
             elif data["max_attempts"] == data["attempt_number"]:
                 createIncident(
                     config_token,
@@ -178,8 +169,6 @@ def main():
                     data["description"],
                     getSeverity(data["servicestate"]),
                 )
-            else:
-                sys.exit(0)
 
 
 if __name__ == "__main__":
