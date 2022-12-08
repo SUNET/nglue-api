@@ -11,6 +11,9 @@ anyio==3.6.2 \
     #   httpcore
     #   starlette
     #   watchfiles
+argus-api-client==0.4.3 \
+    --hash=sha256:685e672f910da2d64710bf93c0ba82f275907a94e8d3f3a3c0331a7cef0581c3
+    # via -r requirements.in
 async-timeout==4.0.2 \
     --hash=sha256:2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15 \
     --hash=sha256:8ca1e4fcf50d07413d66d1a5e416e42cfdf5851c981d679a09851a6853383b3c
@@ -107,7 +110,9 @@ iso8601==0.1.13 \
     --hash=sha256:694be0743e9f1535ea873bfc7bd6fb62380c62b75822761859428073a17fd39c \
     --hash=sha256:6f02f01dd13320a7f280e58516dc8d1950dfaf77527cc365a398cd9de4d3c692 \
     --hash=sha256:f7dec22af52025d4526be94cc1303c7d8f5379b746a3f54a8c8446384392eeb1
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   argus-api-client
 itsdangerous==2.1.2 \
     --hash=sha256:2c2349112351b88699d8d4b6b075022c0808887cb7ad10069318a8b0bc88db44 \
     --hash=sha256:5dbbc68b317e5e42f327f9021763545dc3fc3bfe22e6deb96aaf1fc38874156a
@@ -311,7 +316,9 @@ rfc3986[idna2008]==1.5.0 \
 simple-rest-client==1.0.8 \
     --hash=sha256:1e4447f5b59017c9f1536633fc5813373b59641bbf48cedab65435cde14f5bc7 \
     --hash=sha256:682aabd4e1bb1cc9f22b1172f1e70cbd4c529e84d08e49a5a10923a244c7d3c5
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   argus-api-client
 six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
