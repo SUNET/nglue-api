@@ -41,57 +41,62 @@ def log(log_level: bool, message: str):
 
 
 def createIncident(config_token, config_url, problemid, hostname, description, level):
-    # Create child process to notify ARGUS and  release nagios-check (parent) process
-    # Initiate argus-client object TODO read api_root_url from config file
-    c = Client(api_root_url=config_url, token=config_token)
-    i = Incident(
-        description=hostname
-        + "-"
-        + description[
-            0:115
-        ],  # Merge hostname + trunked description for better visibility in argus
-        start_time=datetime.now(),
-        source_incident_id=problemid,
-        level=level,  # TODO make logic for this (now 1-1 translation from nagios to argus)
-        tags={"host": hostname},
-    )
-    log(debug, "---- END --- Argus will take it from here")
-    if validate:
-        log(debug, "(VALIDATE FLAG DETECTED - create notification not  sent to argus)")
-    else:
-        output = c.post_incident(i)
-        log(debug, output)
+    try:
+        # Create child process to notify ARGUS and  release nagios-check (parent) process
+        # Initiate argus-client object TODO read api_root_url from config file
+        c = Client(api_root_url=config_url, token=config_token)
+        i = Incident(
+            description=hostname
+            + "-"
+            + description[
+                0:115
+            ],  # Merge hostname + trunked description for better visibility in argus
+            start_time=datetime.now(),
+            source_incident_id=problemid,
+            level=level,  # TODO make logic for this (now 1-1 translation from nagios to argus)
+            tags={"host": hostname},
+        )
+        log(debug, "---- END --- Argus will take it from here")
+        if validate:
+            log(debug, "(VALIDATE FLAG DETECTED - create notification not  sent to argus)")
+        else:
+            output = c.post_incident(i)
+            log(debug, output)
+    except Exception as e:
+        print(e)
 
 
 def closeIncident(
     config_token, config_url, problemid, lastproblemid, hostname, close_description
 ):
-    # State changed - clear case i Argus
-    log(debug, "Clear incident")
-    # Create child process to notify ARGUS and  release nagios-check (parent) process
-    # Initiate argus-client object TODO read api_root_url from config file
-    c = Client(api_root_url=config_url, token=config_token)
-    # Loop through incidents on Argus
-    for incident in c.get_my_incidents(open=True):
-        log(debug, incident.source_incident_id)
-        # Service recovery notification still contains the problemId in the problemID variable, Hosts however move it over to lastproblemID
-        if incident.source_incident_id in (problemid, lastproblemid):
-            log(debug, incident.pk)
-            log(debug, "---- END --- Argus will take it from here")
-            if validate == 1:
+    try:
+        # State changed - clear case i Argus
+        log(debug, "Clear incident")
+        # Create child process to notify ARGUS and  release nagios-check (parent) process
+        # Initiate argus-client object TODO read api_root_url from config file
+        c = Client(api_root_url=config_url, token=config_token)
+        # Loop through incidents on Argus
+        for incident in c.get_my_incidents(open=True):
+            log(debug, incident.source_incident_id)
+            # Service recovery notification still contains the problemId in the problemID variable, Hosts however move it over to lastproblemID
+            if incident.source_incident_id in (problemid, lastproblemid):
                 log(debug, incident.pk)
-                log(
-                    debug,
-                    "(VALIDATE FLAG DETECTED - clear notification not sent to argus)",
-                )
-            else:
-                c.resolve_incident(
-                    incident=incident.pk,
-                    description=hostname + "-" + close_description[0:115],
-                    timestamp=datetime.now(),
-                )
-    log(debug, "---- END --- No matching incidents found")
-
+                log(debug, "---- END --- Argus will take it from here")
+                if validate:
+                    log(debug, incident.pk)
+                    log(
+                        debug,
+                        "(VALIDATE FLAG DETECTED - clear notification not sent to argus)",
+                    )
+                else:
+                    c.resolve_incident(
+                        incident=incident.pk,
+                        description=hostname + "-" + close_description[0:115],
+                        timestamp=datetime.now(),
+                    )
+        log(debug, "---- END --- No matching incidents found")
+    except Exception as e:
+        print(e)
 
 def main():
     r = redis.Redis(host="localhost", port=6379, db=0)
