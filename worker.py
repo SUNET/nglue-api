@@ -131,6 +131,7 @@ def main():
         # TODO find a way to syncronize argus and nagios
         if data["sync"]:
             log(debug, "---- END --- SYNC Funtion not yet in place")
+            continue
 
         # Description of macros in nagios
         # https://assets.nagios.com/downloads/nagioscore/docs/nagioscore/4/en/macrolist.html
@@ -148,6 +149,7 @@ def main():
             if data["servicestateid"] == data["lastservicestateid"]:
                 # No state change - exit
                 log(debug, "---- END --- Check is still green")
+                continue
             else:
                 closeIncident(
                     config_token=config_token,
@@ -165,6 +167,7 @@ def main():
                     debug,
                     "---- END --- Argus is already aware of this issue (Or issue not critical enough)",
                 )
+                continue
             elif data["max_attempts"] == data["attempt_number"]:
                 createIncident(
                     config_token,
