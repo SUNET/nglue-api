@@ -1,2 +1,5 @@
 fastapi[all]
 redis
+# For pyargus client
+simple_rest_client==1.0.8
+iso8601==0.1.13
