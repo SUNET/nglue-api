@@ -139,6 +139,7 @@ def main():
         # If Notification are disabled for the Service - EXIT Follows $SERVICENOTIFICATIONENABLED$
         if data["notification"] == "NO":
             log(debug, "---- END --- No notification on this check")
+            continue
         # Create incident with argus
         # Conditions for new Incident - Service StateID different from Last ServiceStateID,
         # Last ServiceStateID is 0 and ProblemID is 0
