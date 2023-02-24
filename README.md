@@ -6,6 +6,8 @@ This is API server for nglue, this will receive the details from the command lin
 
 ## How to build the container?
 
+First, create a proper `config.py` with token & correct URL for Argus.
+
 ```
 podman build -t kdas/nglue-api .
 ```
