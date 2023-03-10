@@ -1,0 +1,13 @@
+---
+git:
+  branch: main
+triggers:
+  cron: "@daily"
+clean_workspace: true
+script:
+  - echo "Build API container to run Nagios-Glue-Service for Argus"
+builders:
+  - docker
+docker_name: sunet/nglue-api
+docker_tags:
+  - "v1.0.0.0"
