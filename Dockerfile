@@ -25,7 +25,7 @@ COPY requirements.txt /home/apiuser/requirements.txt
 # Add the API server and client.py
 COPY main.py /home/apiuser/
 COPY worker.py /home/apiuser/
-COPY config.py /home/apiuser/
+COPY config.py* /home/apiuser/
 
 WORKDIR /home/apiuser
 RUN /usr/sbin/setup.sh
