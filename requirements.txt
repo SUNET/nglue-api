@@ -11,8 +11,8 @@ anyio==3.6.2 \
     #   httpcore
     #   starlette
     #   watchfiles
-argus-api-client==0.4.3 \
-    --hash=sha256:685e672f910da2d64710bf93c0ba82f275907a94e8d3f3a3c0331a7cef0581c3
+argus-api-client==0.6.0 \
+    --hash=sha256:b865cb82ea3116538214eccf968d1921a4e432c0b045d14579f272fdbebf6991
     # via -r requirements.in
 async-timeout==4.0.2 \
     --hash=sha256:2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15 \
