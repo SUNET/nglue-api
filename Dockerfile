@@ -1,4 +1,4 @@
-FROM python:3.11-bullseye
+FROM python:3.13-slim-trixie
 
 MAINTAINER Kushal Das <kushal@sunet.se>
 
