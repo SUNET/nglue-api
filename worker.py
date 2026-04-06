@@ -120,7 +120,7 @@ def main():
         data_bytes = r.blpop("nglue")
         # Now our json data
         #data = json.loads(data_bytes[1].decode("utf-8"))
-        data = fast_json_load(data_bytes[1])
+        data = clean_json_load(data_bytes[1])
         debug =  data.get("debug", False)
         if  data.get("test_api", False):
             client = Client(api_root_url=config_url, token=config_token)
