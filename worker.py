@@ -3,6 +3,7 @@ import sys
 import os
 import redis
 import json
+import orjson
 from pprint import pprint
 
 from pyargus.client import Client
@@ -38,6 +39,18 @@ def log(log_level: bool, message: str):
     "Prints the log to the STDOUT"
     if log_level:
         print(message)
+
+def clean_json_load(data_bytes):
+    try:
+        if data_bytes[0:1] in (b'$', b'*'):
+            payload = data_bytes.split(b'\r\n', 1)[1]
+        else:
+            payload = data_bytes
+        data = orjson.loads(payload)  # Auto UTF-8 + no BOM issues
+        return data
+    except Exception as e:
+        print(f"Load JSON failed: {e}")
+        return None
 
 
 def createIncident(config_token, config_url, problemid, hostname, description, level):
@@ -106,9 +119,10 @@ def main():
         # This is from redis
         data_bytes = r.blpop("nglue")
         # Now our json data
-        data = json.loads(data_bytes[1].decode("utf-8"))
-        debug = data["debug"]
-        if data["test_api"]:
+        #data = json.loads(data_bytes[1].decode("utf-8"))
+        data = fast_json_load(data_bytes[1])
+        debug =  data.get("debug", False)
+        if  data.get("test_api", False):
             client = Client(api_root_url=config_url, token=config_token)
             try:
                 incidents = client.get_incidents(open=True)
@@ -131,7 +145,7 @@ def main():
             pprint(data)
 
         # TODO find a way to syncronize argus and nagios
-        if data["sync"]:
+        if data.get("sync", False):
             log(debug, "---- END --- SYNC Funtion not yet in place")
             continue
 
