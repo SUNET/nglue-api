@@ -117,11 +117,13 @@ def main():
                     "Argus API is accessible at {}".format(client.api.api_root_url),
                     file=sys.stderr,
                 )
+                continue
             except Exception:
                 print(
                     "ERROR: Argus API failed on {}".format(client.api.api_root_url),
                     file=sys.stderr,
                 )
+                continue
 
         # Debug purpose
         log(debug, "---- START ---")
@@ -164,6 +166,24 @@ def main():
             # Check if attempt number is the same as max attempts configured for the check, create ticket.
             # exit otherwise
             if data["max_attempts"] != data["attempt_number"]:
+#                # TODO unless the service state changes to critical, then delete old incident and creatge a new one to trigger notification.
+#                closeIncident(
+#                    config_token=config_token,
+#                    config_url=config_url,
+#                    problemid=data["problemid"],
+#                    lastproblemid=data["lastproblemid"],
+#                    hostname=data["hostname"],
+#                    close_description=data["description"],
+#                )
+#                # TODO this won't work, will try to create a re-open fucntion and see if it triggers a notification.
+#                createIncident(
+#                    config_token,
+#                    config_url,
+#                    data["problemid"],
+#                    data["hostname"],
+#                    data["description"],
+#                    getSeverity(data["servicestate"]),
+#                )
                 log(
                     debug,
                     "---- END --- Argus is already aware of this issue (Or issue not critical enough)",
