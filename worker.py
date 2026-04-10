@@ -122,6 +122,7 @@ def main():
         #data = json.loads(data_bytes[1].decode("utf-8"))
         data = clean_json_load(data_bytes[1])
         debug =  data.get("debug", False)
+        validate = data.get("validate", False)
         if  data.get("test_api", False):
             log(debug, "---- TESTING API ---")
             client = Client(api_root_url=config_url, token=config_token)

@@ -10,4 +10,4 @@ builders:
   - docker
 docker_name: sunet/nglue-api
 docker_tags:
-  - "v2.0.0.0-alpha"
+  - "v2.0.0.1-alpha"
