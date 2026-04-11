@@ -223,7 +223,7 @@ def main():
                 )
                 log(debug, "---- END --- ARGUS will create this ticket")
                 continue
-            else
+            else:
                 updateIncident(
                     config_token,
                     config_url,
