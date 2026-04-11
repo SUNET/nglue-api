@@ -112,11 +112,11 @@ def closeIncident(
         print(e)
 
 def updateIncident(
-    config_token, config_url, problemid, lastproblemid, hostname, update_description
+    config_token, config_url, problemid, lastproblemid, hostname, update_description, level, validate
 ):
     try:
         # State changed - clear case i Argus
-        log(debug, "Clear incident")
+        log(debug, "Update incident")
         # Create child process to notify ARGUS and  release nagios-check (parent) process
         # Initiate argus-client object TODO read api_root_url from config file
         c = Client(api_root_url=config_url, token=config_token)
@@ -135,7 +135,7 @@ def updateIncident(
                     )
                 else:
                     i = Incident(
-                        description=hostname + "-" + description[0:115],  # Merge hostname + trunked description for better visibility in argus
+                        description=hostname + "-" + update_description[0:115],  # Merge hostname + trunked description for better visibility in argus
                         start_time=incident.start_time,
                         source_incident_id=problemid,
                         level=level,  # TODO make logic for this (now 1-1 translation from nagios to argus)
@@ -231,6 +231,7 @@ def main():
                     data["hostname"],
                     data["description"],
                     getSeverity(data["servicestate"]),
+                    validate,
                 )
                 log(debug, "---- END --- ARGUS will update this ticket")
                 continue
