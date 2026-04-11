@@ -111,6 +111,42 @@ def closeIncident(
     except Exception as e:
         print(e)
 
+def updateIncident(
+    config_token, config_url, problemid, lastproblemid, hostname, update_description
+):
+    try:
+        # State changed - clear case i Argus
+        log(debug, "Clear incident")
+        # Create child process to notify ARGUS and  release nagios-check (parent) process
+        # Initiate argus-client object TODO read api_root_url from config file
+        c = Client(api_root_url=config_url, token=config_token)
+        # Loop through incidents on Argus
+        for incident in c.get_my_incidents(open=True):
+            log(debug, incident.source_incident_id)
+            # Service recovery notification still contains the problemId in the problemID variable, Hosts however move it over to lastproblemID
+            if incident.source_incident_id in (problemid, lastproblemid):
+                log(debug, incident.pk)
+                log(debug, "---- END --- Argus will take it from here")
+                if validate:
+                    log(debug, incident.pk)
+                    log(
+                        debug,
+                        "(VALIDATE FLAG DETECTED - update  not sent to argus)",
+                    )
+                else:
+                    i = Incident(
+                        description=hostname + "-" + description[0:115],  # Merge hostname + trunked description for better visibility in argus
+                        start_time=incident.start_time,
+                        source_incident_id=problemid,
+                        level=level,  # TODO make logic for this (now 1-1 translation from nagios to argus)
+                        tags={"host": hostname},
+                    )
+                    c.update_incident(i)
+                break
+        log(debug, "---- END --- No matching incidents found")
+    except Exception as e:
+        print(e)
+
 def main():
     r = redis.Redis(host="localhost", port=6379, db=0)
     print("Starting the client worker:")
@@ -119,7 +155,6 @@ def main():
         # This is from redis
         data_bytes = r.blpop("nglue")
         # Now our json data
-        #data = json.loads(data_bytes[1].decode("utf-8"))
         data = clean_json_load(data_bytes[1])
         debug =  data.get("debug", False)
         validate = data.get("validate", False)
@@ -155,9 +190,9 @@ def main():
         # https://assets.nagios.com/downloads/nagioscore/docs/nagioscore/4/en/macrolist.html
 
         # If Notification are disabled for the Service - EXIT Follows $SERVICENOTIFICATIONENABLED$
-        if data["notification"] == "NO":
-            log(debug, "---- END --- No notification on this check")
-            continue
+        #if data["notification"] == "NO":
+        #    log(debug, "---- END --- No notification on this check")
+        #    continue
         # Create incident with argus
         # Conditions for new Incident - Service StateID different from Last ServiceStateID,
         # Last ServiceStateID is 0 and ProblemID is 0
@@ -165,11 +200,7 @@ def main():
         # First check ServiceID value
         if data["servicestateid"] == 0:
             # Check for state change
-            if data["servicestateid"] == data["lastservicestateid"]:
-                # No state change - exit
-                log(debug, "---- END --- Check is still green")
-                continue
-            else:
+            if data["servicestateid"] != data["lastservicestateid"]:
                 closeIncident(
                     config_token=config_token,
                     config_url=config_url,
@@ -178,34 +209,10 @@ def main():
                     hostname=data["hostname"],
                     close_description=data["description"],
                 )
-        elif data["servicestateid"] > 0:
-            # Check if attempt number is the same as max attempts configured for the check, create ticket.
-            # exit otherwise
-            if data["max_attempts"] != data["attempt_number"]:
-#                # TODO unless the service state changes to critical, then delete old incident and creatge a new one to trigger notification.
-#                closeIncident(
-#                    config_token=config_token,
-#                    config_url=config_url,
-#                    problemid=data["problemid"],
-#                    lastproblemid=data["lastproblemid"],
-#                    hostname=data["hostname"],
-#                    close_description=data["description"],
-#                )
-#                # TODO this won't work, will try to create a re-open fucntion and see if it triggers a notification.
-#                createIncident(
-#                    config_token,
-#                    config_url,
-#                    data["problemid"],
-#                    data["hostname"],
-#                    data["description"],
-#                    getSeverity(data["servicestate"]),
-#                )
-                log(
-                    debug,
-                    "---- END --- Argus is already aware of this issue (Or issue not critical enough)",
-                )
+                log(debug, "---- END --- ARGUS will close this ticket")
                 continue
-            elif data["max_attempts"] == data["attempt_number"]:
+        elif data["servicestatetype"] == 'HARD':
+            if data["lastservicestateid"] == 0:
                 createIncident(
                     config_token,
                     config_url,
@@ -214,6 +221,19 @@ def main():
                     data["description"],
                     getSeverity(data["servicestate"]),
                 )
+                log(debug, "---- END --- ARGUS will create this ticket")
+                continue
+            else
+                updateIncident(
+                    config_token,
+                    config_url,
+                    data["problemid"],
+                    data["hostname"],
+                    data["description"],
+                    getSeverity(data["servicestate"]),
+                )
+                log(debug, "---- END --- ARGUS will update this ticket")
+                continue
 
 
 if __name__ == "__main__":
