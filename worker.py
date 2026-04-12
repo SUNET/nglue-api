@@ -110,7 +110,6 @@ def closeIncident(
                     )
                     log(debug, output)
                     log(debug, "---- PROCESSING --- Argus returned from terminating the incident")
-        log(debug, "---- END ---")
     except Exception as e:
         print(e)
 
@@ -147,7 +146,6 @@ def updateIncident(
                     log(debug, output)
                     log(debug, "---- PROCESSING --- Argus returned from altering the ticket state")
                 break
-        log(debug, "---- END ---")
     except Exception as e:
         print(e)
 
@@ -231,7 +229,7 @@ def main():
                 )
                 log(debug, "---- END --- ARGUS was sent on incident update quest")
                 continue
-        log(debug, "---- END ---- my work here is done")
+        log(debug, "---- END ---- They said Argus saw everything; yet even Argus deserved a moment to close his eyes")
 
 
 if __name__ == "__main__":
