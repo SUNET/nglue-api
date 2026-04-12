@@ -69,12 +69,13 @@ def createIncident(config_token, config_url, problemid, hostname, description, l
             level=level,  # TODO make logic for this (now 1-1 translation from nagios to argus)
             tags={"host": hostname},
         )
-        log(debug, "---- END --- Argus will take it from here")
+        log(debug, "---- PROCESSING --- Argus is requested to raise an incident")
         if validate:
             log(debug, "(VALIDATE FLAG DETECTED - create notification not  sent to argus)")
         else:
             output = c.post_incident(i)
             log(debug, output)
+            log(debug, "---- PROCESSING --- Argus returned from raising the incident")
     except Exception as e:
         print(e)
 
@@ -94,7 +95,7 @@ def closeIncident(
             # Service recovery notification still contains the problemId in the problemID variable, Hosts however move it over to lastproblemID
             if incident.source_incident_id in (problemid, lastproblemid):
                 log(debug, incident.pk)
-                log(debug, "---- END --- Argus will take it from here")
+                log(debug, "---- PROCESSING --- Argus is requested to terminate the incident")
                 if validate:
                     log(debug, incident.pk)
                     log(
@@ -102,17 +103,19 @@ def closeIncident(
                         "(VALIDATE FLAG DETECTED - clear notification not sent to argus)",
                     )
                 else:
-                    c.resolve_incident(
+                    output = c.resolve_incident(
                         incident=incident.pk,
                         description=hostname + "-" + close_description[0:115],
                         timestamp=datetime.now(),
                     )
-        log(debug, "---- END --- No matching incidents found")
+                    log(debug, output)
+                    log(debug, "---- PROCESSING --- Argus returned from terminating the incident")
+        log(debug, "---- END ---")
     except Exception as e:
         print(e)
 
 def updateIncident(
-    config_token, config_url, problemid, lastproblemid, hostname, update_description, level, validate
+    config_token, config_url, problemid, lastproblemid, hostname, update_description, level
 ):
     try:
         # State changed - clear case i Argus
@@ -126,7 +129,7 @@ def updateIncident(
             # Service recovery notification still contains the problemId in the problemID variable, Hosts however move it over to lastproblemID
             if incident.source_incident_id in (problemid, lastproblemid):
                 log(debug, incident.pk)
-                log(debug, "---- END --- Argus will take it from here")
+                log(debug, "---- PROCESSING --- Argus is requested to refine the ticket")
                 if validate:
                     log(debug, incident.pk)
                     log(
@@ -135,15 +138,16 @@ def updateIncident(
                     )
                 else:
                     i = Incident(
+                        pk=incident.pk,
                         description=hostname + "-" + update_description[0:115],  # Merge hostname + trunked description for better visibility in argus
-                        start_time=incident.start_time,
-                        source_incident_id=problemid,
                         level=level,  # TODO make logic for this (now 1-1 translation from nagios to argus)
                         tags={"host": hostname},
                     )
-                    c.update_incident(i)
+                    output = c.update_incident(i)
+                    log(debug, output)
+                    log(debug, "---- PROCESSING --- Argus returned from altering the ticket state")
                 break
-        log(debug, "---- END --- No matching incidents found")
+        log(debug, "---- END ---")
     except Exception as e:
         print(e)
 
@@ -189,14 +193,6 @@ def main():
         # Description of macros in nagios
         # https://assets.nagios.com/downloads/nagioscore/docs/nagioscore/4/en/macrolist.html
 
-        # If Notification are disabled for the Service - EXIT Follows $SERVICENOTIFICATIONENABLED$
-        #if data["notification"] == "NO":
-        #    log(debug, "---- END --- No notification on this check")
-        #    continue
-        # Create incident with argus
-        # Conditions for new Incident - Service StateID different from Last ServiceStateID,
-        # Last ServiceStateID is 0 and ProblemID is 0
-
         # First check ServiceID value
         if data["servicestateid"] == 0:
             # Check for state change
@@ -209,7 +205,7 @@ def main():
                     hostname=data["hostname"],
                     close_description=data["description"],
                 )
-                log(debug, "---- END --- ARGUS will close this ticket")
+                log(debug, "---- END --- ARGUS was sent on a incident termination quest")
                 continue
         elif data["servicestatetype"] == 'HARD':
             if data["lastservicestateid"] == 0:
@@ -221,20 +217,21 @@ def main():
                     data["description"],
                     getSeverity(data["servicestate"]),
                 )
-                log(debug, "---- END --- ARGUS will create this ticket")
+                log(debug, "---- END --- ARGUS was sent on incident creation quest")
                 continue
-            else:
+            elif data["lastservicestateid"] != data["servicestateid"]:
                 updateIncident(
                     config_token,
                     config_url,
                     data["problemid"],
+                    data["lastproblemid"],
                     data["hostname"],
                     data["description"],
                     getSeverity(data["servicestate"]),
-                    validate,
                 )
-                log(debug, "---- END --- ARGUS will update this ticket")
+                log(debug, "---- END --- ARGUS was sent on incident update quest")
                 continue
+        log(debug, "---- END ---- my work here is done")
 
 
 if __name__ == "__main__":
