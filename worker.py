@@ -59,11 +59,7 @@ def createIncident(config_token, config_url, problemid, hostname, description, l
         # Initiate argus-client object TODO read api_root_url from config file
         c = Client(api_root_url=config_url, token=config_token)
         i = Incident(
-            description=hostname
-            + "-"
-            + description[
-                0:115
-            ],  # Merge hostname + trunked description for better visibility in argus
+            description=hostname + "-" + description,  # Merge hostname + trunked description for better visibility in argus
             start_time=datetime.now(),
             source_incident_id=problemid,
             level=level,  # TODO make logic for this (now 1-1 translation from nagios to argus)
@@ -102,7 +98,7 @@ def closeIncident(
                 else:
                     output = c.resolve_incident(
                         incident=incident.pk,
-                        description=hostname + "-" + close_description[0:115],
+                        description=hostname + "-" + close_description,
                         timestamp=datetime.now(),
                     )
                     log(debug, output)
@@ -132,7 +128,7 @@ def updateIncident(
                 else:
                     i = Incident(
                         pk=incident.pk,
-                        description=hostname + "-" + update_description[0:115],  # Merge hostname + trunked description for better visibility in argus
+                        description=hostname + "-" + update_description,  # Merge hostname + trunked description for better visibility in argus
                         level=level,  # TODO make logic for this (now 1-1 translation from nagios to argus)
                         tags={"host": hostname},
                     )
