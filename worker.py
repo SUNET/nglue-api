@@ -69,13 +69,13 @@ def createIncident(config_token, config_url, problemid, hostname, description, l
             level=level,  # TODO make logic for this (now 1-1 translation from nagios to argus)
             tags={"host": hostname},
         )
-        log(debug, "---- PROCESSING --- Argus is requested to raise an incident")
+        log(debug, "---- PROCESSING --- Argus is called to raise the incident")
         if validate:
-            log(debug, "(VALIDATE FLAG DETECTED - create notification not  sent to argus)")
+            log(debug, "(VALIDATE FLAG DETECTED - no summons reached Argus, silence carried the validation)")
         else:
             output = c.post_incident(i)
             log(debug, output)
-            log(debug, "---- PROCESSING --- Argus returned from raising the incident")
+            log(debug, "---- PROCESSING --- Argus returned from raising the incident, eyes dim but knowing all had begun.")
     except Exception as e:
         print(e)
 
@@ -95,13 +95,10 @@ def closeIncident(
             # Service recovery notification still contains the problemId in the problemID variable, Hosts however move it over to lastproblemID
             if incident.source_incident_id in (problemid, lastproblemid):
                 log(debug, incident.pk)
-                log(debug, "---- PROCESSING --- Argus is requested to terminate the incident")
+                log(debug, "---- PROCESSING --- Argus is requested to terminate the incident... They called for Argus to end what was made")
                 if validate:
                     log(debug, incident.pk)
-                    log(
-                        debug,
-                        "(VALIDATE FLAG DETECTED - clear notification not sent to argus)",
-                    )
+                    log(debug,"(VALIDATE FLAG DETECTED - no summons reached Argus, silence carried the validation)")
                 else:
                     output = c.resolve_incident(
                         incident=incident.pk,
@@ -128,13 +125,10 @@ def updateIncident(
             # Service recovery notification still contains the problemId in the problemID variable, Hosts however move it over to lastproblemID
             if incident.source_incident_id in (problemid, lastproblemid):
                 log(debug, incident.pk)
-                log(debug, "---- PROCESSING --- Argus is requested to refine the ticket")
+                log(debug, "---- PROCESSING --- Argus is requested to shape the ticket, refinement became his quiet craft")
                 if validate:
                     log(debug, incident.pk)
-                    log(
-                        debug,
-                        "(VALIDATE FLAG DETECTED - update  not sent to argus)",
-                    )
+                    log(debug,"(VALIDATE FLAG DETECTED - no summons reached Argus, silence carried the validation)")
                 else:
                     i = Incident(
                         pk=incident.pk,
@@ -144,7 +138,7 @@ def updateIncident(
                     )
                     output = c.update_incident(i)
                     log(debug, output)
-                    log(debug, "---- PROCESSING --- Argus returned from altering the ticket state")
+                    log(debug, "---- PROCESSING --- Argus re-emerged from altering the ticket")
                 break
     except Exception as e:
         print(e)
@@ -161,7 +155,7 @@ def main():
         debug =  data.get("debug", False)
         validate = data.get("validate", False)
         if  data.get("test_api", False):
-            log(debug, "---- TESTING API ---")
+            log(debug, "---- TESTING API --- The gods tested the API; Argus watched, patient as stone")
             client = Client(api_root_url=config_url, token=config_token)
             try:
                 incidents = client.get_incidents(open=True)
@@ -179,13 +173,13 @@ def main():
                 continue
 
         # Debug purpose
-        log(debug, "---- START ---")
+        log(debug, "---- START --- Argus locks on the matter, his jugdment will be swift")
         if debug:
             pprint(data)
 
         # TODO find a way to syncronize argus and nagios
         if data.get("sync", False):
-            log(debug, "---- END --- SYNC Funtion not yet in place")
+            log(debug, "---- END --- The sync function is not in place yet ")
             continue
 
         # Description of macros in nagios
@@ -203,7 +197,7 @@ def main():
                     hostname=data["hostname"],
                     close_description=data["description"],
                 )
-                log(debug, "---- END --- ARGUS was sent on a incident termination quest")
+                log(debug, "---- END --- Argus was sent on the path of ending")
                 continue
         elif data["servicestatetype"] == 'HARD':
             if data["lastservicestateid"] == 0:
@@ -215,7 +209,7 @@ def main():
                     data["description"],
                     getSeverity(data["servicestate"]),
                 )
-                log(debug, "---- END --- ARGUS was sent on incident creation quest")
+                log(debug, "---- END --- Argus was sent on the path of creation")
                 continue
             elif data["lastservicestateid"] != data["servicestateid"]:
                 updateIncident(
@@ -227,7 +221,7 @@ def main():
                     data["description"],
                     getSeverity(data["servicestate"]),
                 )
-                log(debug, "---- END --- ARGUS was sent on incident update quest")
+                log(debug, "---- END --- Argus was sent on the path of renewal, an update forged in metamorphic light")
                 continue
         log(debug, "---- END ---- They said Argus saw everything; yet even Argus deserved a moment to close his eyes")
 
