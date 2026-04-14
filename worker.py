@@ -186,7 +186,7 @@ def main():
                     lastproblemid=data["lastproblemid"],
                     hostname=data["hostname"],
                     close_description=data["description"],
-                    validate,
+                    validate=validate,
                 )
                 log(debug, "---- END --- Argus was sent on the path of ending")
                 continue
@@ -199,7 +199,7 @@ def main():
                     data["hostname"],
                     data["description"],
                     getSeverity(data["servicestate"]),
-                    validate,
+                    validate=validate,
                 )
                 log(debug, "---- END --- Argus was sent on the path of creation")
                 continue
@@ -212,7 +212,7 @@ def main():
                     data["hostname"],
                     data["description"],
                     getSeverity(data["servicestate"]),
-                    validate,
+                    validate=validate,
                 )
                 log(debug, "---- END --- Argus was sent on the path of renewal, an update forged in metamorphic light")
                 continue
