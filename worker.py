@@ -14,8 +14,6 @@ from config import config_token
 from config import config_url
 
 debug = False
-validate = False
-
 
 def getSeverity(servicestate):
     # This will set the <level 1-5> to be sent to Argus
@@ -53,7 +51,7 @@ def clean_json_load(data_bytes):
         return None
 
 
-def createIncident(config_token, config_url, problemid, hostname, description, level):
+def createIncident(config_token, config_url, problemid, hostname, description, level, validate):
     try:
         # Create child process to notify ARGUS and  release nagios-check (parent) process
         # Initiate argus-client object TODO read api_root_url from config file
@@ -76,9 +74,7 @@ def createIncident(config_token, config_url, problemid, hostname, description, l
         print(e)
 
 
-def closeIncident(
-    config_token, config_url, problemid, lastproblemid, hostname, close_description
-):
+def closeIncident(config_token, config_url, problemid, lastproblemid, hostname, close_description, validate):
     try:
         # State changed - clear case i Argus
         log(debug, "Clear incident")
@@ -106,9 +102,7 @@ def closeIncident(
     except Exception as e:
         print(e)
 
-def updateIncident(
-    config_token, config_url, problemid, lastproblemid, hostname, update_description, level
-):
+def updateIncident(config_token, config_url, problemid, lastproblemid, hostname, update_description, level, validate):
     try:
         # State changed - clear case i Argus
         log(debug, "Update incident")
@@ -141,7 +135,7 @@ def updateIncident(
 
 def main():
     r = redis.Redis(host="localhost", port=6379, db=0)
-    print("Starting the client worker:")
+    print("The many eyes of Argus open. The Client Worker… starts")
     global debug
     while True:
         # This is from redis
@@ -192,6 +186,7 @@ def main():
                     lastproblemid=data["lastproblemid"],
                     hostname=data["hostname"],
                     close_description=data["description"],
+                    validate
                 )
                 log(debug, "---- END --- Argus was sent on the path of ending")
                 continue
@@ -204,6 +199,7 @@ def main():
                     data["hostname"],
                     data["description"],
                     getSeverity(data["servicestate"]),
+                    validate
                 )
                 log(debug, "---- END --- Argus was sent on the path of creation")
                 continue
@@ -216,6 +212,7 @@ def main():
                     data["hostname"],
                     data["description"],
                     getSeverity(data["servicestate"]),
+                    validate
                 )
                 log(debug, "---- END --- Argus was sent on the path of renewal, an update forged in metamorphic light")
                 continue
